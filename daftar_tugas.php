@@ -97,6 +97,8 @@ $tasks = $conn->query("SELECT *,
                         ORDER BY FIELD(urgency, 'urgent', 'normal', 'completed'), deadline ASC, id DESC");
 
 $statusFilter = isset($_POST['status_filter']) ? $_POST['status_filter'] : 'all';
+$prioritasFilter = isset($_POST['prioritas_filter']) ? $_POST['prioritas_filter'] : 'all';
+
 
 if ($statusFilter === 'completed') {
     $tasks = $conn->query("SELECT *, 
@@ -119,6 +121,31 @@ if ($statusFilter === 'completed') {
                             WHERE id_pengguna = '$pengguna'
                             ORDER BY FIELD(urgency, 'urgent', 'normal', 'completed'), deadline ASC, id DESC");
 }
+
+$filterQuery = "SELECT *, 
+                CASE 
+                    WHEN status = 'completed' THEN 'completed'
+                    WHEN deadline <= DATE_ADD(NOW(), INTERVAL 3 DAY) THEN 'urgent' 
+                    ELSE 'normal' 
+                END AS urgency 
+                FROM tasks 
+                WHERE id_pengguna = '$pengguna'";
+
+if ($statusFilter === 'completed') {
+    $filterQuery .= " AND status = 'completed'";
+} elseif ($statusFilter === 'pending') {
+    $filterQuery .= " AND status = 'pending'";
+}
+
+
+if ($prioritasFilter !== 'all') {
+    $filterQuery .= " AND prioritas = '$prioritasFilter'";
+}
+
+$filterQuery .= " ORDER BY FIELD(urgency, 'urgent', 'normal', 'completed'), deadline ASC, id DESC";
+
+$tasks = $conn->query($filterQuery);
+
 
 
 $notifikasi = $conn->query("
@@ -189,12 +216,22 @@ while ($notif = $notifikasi->fetch_assoc()) {
         <button onclick="addTask()" class="button">Tambah Tugas</button>
         <button onclick="logout()" class="button">Logout</button>
 
-        <form method="POST" style="margin: 20px 0;">
-            <select name="status_filter" onchange="this.form.submit()">
-                <option value="all" <?php echo ($statusFilter === 'all') ? 'selected' : ''; ?>>Semua Tugas</option>
-                <option value="completed" <?php echo ($statusFilter === 'completed') ? 'selected' : ''; ?>>Tugas Selesai</option>
-            </select>
-        </form>
+        <form method="POST" style="margin: 20px 0; display: flex; gap: 10px; align-items: center;">
+        <select name="status_filter" onchange="this.form.submit()">
+    <option value="all" <?php echo ($statusFilter === 'all') ? 'selected' : ''; ?>>Semua Tugas</option>
+    <option value="pending" <?php echo ($statusFilter === 'pending') ? 'selected' : ''; ?>>Tugas Belum Selesai</option>
+    <option value="completed" <?php echo ($statusFilter === 'completed') ? 'selected' : ''; ?>>Tugas Selesai</option>
+</select>
+
+
+    <select name="prioritas_filter" onchange="this.form.submit()">
+        <option value="all" <?php echo (!isset($_POST['prioritas_filter']) || $_POST['prioritas_filter'] === 'all') ? 'selected' : ''; ?>>Semua Prioritas</option>
+        <option value="tinggi" <?php echo ($_POST['prioritas_filter'] === 'tinggi') ? 'selected' : ''; ?>>Tinggi</option>
+        <option value="sedang" <?php echo ($_POST['prioritas_filter'] === 'sedang') ? 'selected' : ''; ?>>Sedang</option>
+        <option value="rendah" <?php echo ($_POST['prioritas_filter'] === 'rendah') ? 'selected' : ''; ?>>Rendah</option>
+    </select>
+</form>
+
 
         <ul class="task-list">
             <?php while ($task = $tasks->fetch_assoc()): 
@@ -214,7 +251,7 @@ while ($notif = $notifikasi->fetch_assoc()) {
                         <?php if ($isOverdue): ?>
 
                 <p class="overdue-message" style="color: red; font-weight: bold;">
-                    Perhatian: Task ini sudah melewati deadline!
+                    Perhatian: Tugas ini sudah melewati deadline!
                 </p>
             <?php endif; ?>
 

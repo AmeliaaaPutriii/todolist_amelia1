@@ -8,7 +8,7 @@ include 'koneksi.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar - To-Do List</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
@@ -23,7 +23,7 @@ include 'koneksi.php';
             <label>Password:</label>
             <input type="password" name="password" required>
 
-            <button type="submit">Daftar</button>
+            <button type="submit" class="button">Daftar</button>
         </form>
         <p>Sudah punya akun? <a href="login.php">Login di sini</a></p>
     </div>

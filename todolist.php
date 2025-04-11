@@ -6,22 +6,20 @@ if (!isset($_SESSION['id_pengguna'])) {
 }
 
 $conn = new mysqli('localhost', 'root', '', 'db_todolist');
-//$conn = new mysqli('127.0.0.1', 'root', '', 'app_todolist');
 
 $message = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['task'])) {
-  $id_pengguna = $_SESSION['id_pengguna'];
+    $id_pengguna = $_SESSION['id_pengguna'];
     $task = $conn->real_escape_string($_POST['task']);
     $deadline = $_POST['deadline'];
     $deskripsi_tugas = $conn->real_escape_string($_POST['deskripsi_tugas']);
     $prioritas = $_POST['prioritas'];
 
     $query = "INSERT INTO tasks (id_pengguna, task, deadline, status, deskripsi_tugas, prioritas) 
-    VALUES ('$id_pengguna', '$task', '$deadline', 'pending', '$deskripsi_tugas', '$prioritas')";
-    
-    
+              VALUES ('$id_pengguna', '$task', '$deadline', 'pending', '$deskripsi_tugas', '$prioritas')";
+
     if ($conn->query($query)) {
-        $task_id = $conn->insert_id; 
+        $task_id = $conn->insert_id;
 
         if (!empty($_POST['subtasks'])) {
             foreach ($_POST['subtasks'] as $index => $subtask) {
@@ -32,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['task'])) {
                               VALUES ('$task_id', '$subtask', 'pending', '$subtask_desc')");
             }
         }
-        
+
         $_SESSION['message'] = "Tugas berhasil ditambahkan!";
         header("Location: daftar_tugas.php");
         exit();
@@ -81,20 +79,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['task'])) {
 </head>
 <body>
     <div class="container">
-        <h1>Tambah Tugas</h1>
+    <h1 style="text-align:center; margin-top: 60px;">Tambah Tugas</h1>
         <form method="POST">
+        <h1 style="text-align:center;">Tambah Tugas</h1>
             <label>Judul Tugas</label>
             <input type="text" name="task" placeholder="Masukkan judul tugas" required>
 
             <label>Deadline</label>
             <input type="datetime-local" name="deadline" required>
             <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                let inputDeadline = document.querySelector("input[name='deadline']");
-                let now = new Date();
-                now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); 
-                inputDeadline.min = now.toISOString().slice(0, 16); 
-            });
+                document.addEventListener("DOMContentLoaded", function () {
+                    let inputDeadline = document.querySelector("input[name='deadline']");
+                    let now = new Date();
+                    now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); 
+                    inputDeadline.min = now.toISOString().slice(0, 16); 
+                });
             </script>
 
             <label>Deskripsi Tugas</label>
@@ -117,9 +116,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['task'])) {
                     <input type="text" name="subtask_desc[]" placeholder="Tambahkan deskripsi sub-tugas" required>
                 </div>
             </div>
-            <button type="button" onclick="tambahSubTugas()">Tambah Sub-Tugas</button>
-
-            <button type="submit">Tambah Tugas</button>
+            <button type="button" class="button" onclick="tambahSubTugas()">Tambah Sub-Tugas</button>
+            <button type="submit" class="button">Tambah Tugas</button>
         </form>
 
         <a href="daftar_tugas.php" class="button">Lihat Daftar Tugas</a>
